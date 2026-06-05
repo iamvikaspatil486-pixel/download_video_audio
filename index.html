@@ -1,541 +1,604 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FETCH — Video Downloader</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FETCHIT — Video Downloader</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Clash+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #1f1f1f;
-    --accent: #e8ff3a;
-    --accent2: #ff4f3a;
-    --text: #f0f0f0;
-    --muted: #555;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
+:root {
+  --bg: #060608;
+  --surface: #0e0e12;
+  --surface2: #16161c;
+  --border: #1e1e28;
+  --border2: #2a2a38;
+  --accent: #00f5a0;
+  --accent2: #00c8ff;
+  --warn: #ffb800;
+  --danger: #ff4466;
+  --text: #eeeef5;
+  --muted: #4a4a60;
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Clash Display', 'IBM Plex Mono', sans-serif;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(232,255,58,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232,255,58,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* Animated background */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,160,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,160,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0;
+  pointer-events: none;
+}
 
-  /* Glow blob */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 700px;
-    height: 500px;
-    background: radial-gradient(ellipse, rgba(232,255,58,0.06) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+.bg-glow {
+  position: fixed;
+  bottom: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(0,200,255,0.04) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 60px 24px 80px;
-  }
+.bg-glow2 {
+  position: fixed;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(0,245,160,0.03) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  /* Header */
-  header {
-    margin-bottom: 64px;
-    animation: fadeUp 0.6s ease both;
-  }
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
 
-  .badge {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 4px 10px;
-    margin-bottom: 20px;
-  }
+/* ── HEADER ── */
+header { margin-bottom: 52px; animation: up 0.5s ease both; }
 
-  h1 {
-    font-size: clamp(52px, 10vw, 88px);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -3px;
-    color: var(--text);
-  }
+.logo-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
 
-  h1 span {
-    color: var(--accent);
-    display: block;
-  }
+.logo {
+  font-family: var(--display);
+  font-size: clamp(48px, 12vw, 80px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--text);
+}
 
-  .subtitle {
-    margin-top: 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
+.logo em {
+  font-style: normal;
+  color: var(--accent);
+}
 
-  /* Supported platforms */
-  .platforms {
-    display: flex;
-    gap: 8px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
+.version-tag {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
 
-  .platform-tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 4px 8px;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
+.tagline {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+}
 
-  .platform-tag.active {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+.platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+  animation: up 0.5s 0.05s ease both;
+}
 
-  /* Input section */
-  .input-section {
-    margin-bottom: 32px;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
+.pt {
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
 
-  .input-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    display: block;
-  }
+.pt.on { border-color: rgba(0,245,160,0.3); color: var(--accent); }
 
-  .input-row {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    transition: border-color 0.2s;
-  }
+/* ── COLD START BANNER ── */
+#cold-banner {
+  display: none;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,184,0,0.3);
+  background: rgba(255,184,0,0.05);
+  padding: 16px 20px;
+  animation: up 0.3s ease both;
+}
 
-  .input-row:focus-within {
-    border-color: var(--accent);
-  }
+.cold-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
 
-  #url-input {
-    flex: 1;
-    background: var(--surface);
-    border: none;
-    outline: none;
-    padding: 16px 20px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-    min-width: 0;
-  }
+.cold-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--warn);
+  text-transform: uppercase;
+}
 
-  #url-input::placeholder {
-    color: var(--muted);
-  }
+.cold-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+  animation: pulse 1.2s infinite;
+}
 
-  #url-input::-webkit-input-placeholder { color: var(--muted); }
+#cold-timer {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--warn);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+}
 
-  .paste-btn {
-    background: transparent;
-    border: none;
-    border-left: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 0 16px;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: color 0.2s, background 0.2s;
-    white-space: nowrap;
-  }
+.cold-bar-wrap {
+  height: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
 
-  .paste-btn:hover { color: var(--accent); background: rgba(232,255,58,0.04); }
+#cold-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--warn), #ff8c00);
+  width: 100%;
+  transform-origin: left;
+  transition: width 1s linear;
+}
 
-  /* Options row */
-  .options-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.6s 0.25s ease both;
-  }
+.cold-msg {
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  line-height: 1.7;
+}
 
-  .option-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 140px;
-  }
+/* ── INPUT ── */
+.section { animation: up 0.5s 0.1s ease both; }
 
-  .option-group label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
+.field-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
 
-  .option-group select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 14px;
-    font-family: var(--mono);
-    font-size: 12px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
-  }
+.url-row {
+  display: flex;
+  border: 1px solid var(--border2);
+  transition: border-color 0.2s;
+  margin-bottom: 14px;
+}
 
-  .option-group select:focus { border-color: var(--accent); }
+.url-row:focus-within { border-color: var(--accent); }
 
-  /* Fetch button */
-  .fetch-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 18px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: transform 0.15s, background 0.2s;
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
+#url-input {
+  flex: 1;
+  background: var(--surface);
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  min-width: 0;
+}
 
-  .fetch-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.15);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-  }
+#url-input::placeholder { color: var(--muted); }
 
-  .fetch-btn:hover::before { transform: scaleX(1); }
-  .fetch-btn:hover { transform: translateY(-1px); }
-  .fetch-btn:active { transform: translateY(0); }
-  .fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.paste-btn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 0 14px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
 
-  .btn-arrow {
-    font-size: 18px;
-    transition: transform 0.2s;
-  }
+.paste-btn:hover { color: var(--accent); background: rgba(0,245,160,0.04); }
 
-  .fetch-btn:not(:disabled):hover .btn-arrow { transform: translateX(4px); }
+/* Options */
+.opts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+  animation: up 0.5s 0.15s ease both;
+}
 
-  /* Spinner */
-  .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(0,0,0,0.3);
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: none;
-  }
+.opt-group { display: flex; flex-direction: column; gap: 6px; }
 
-  /* Status / result area */
-  #status {
-    margin-top: 32px;
-    animation: fadeUp 0.4s ease both;
-    display: none;
-  }
+.opt-group select {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a4a60'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+}
 
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
-    background: var(--surface);
-    border-left: 3px solid var(--muted);
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
+.opt-group select:focus { border-color: var(--accent); }
 
-  .status-bar.loading { border-color: var(--accent); color: var(--text); }
-  .status-bar.success { border-color: #3aff8a; color: #3aff8a; }
-  .status-bar.error { border-color: var(--accent2); color: var(--accent2); }
+/* Fetch button */
+.fetch-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+  animation: up 0.5s 0.2s ease both;
+}
 
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-  }
+.fetch-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
 
-  .loading .status-dot { animation: pulse 1s infinite; }
+.fetch-btn:hover::after { transform: translateX(0); }
+.fetch-btn:hover { transform: translateY(-1px); }
+.fetch-btn:active { transform: translateY(0); }
+.fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  /* Result card */
-  .result-card {
-    margin-top: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    overflow: hidden;
-    display: none;
-  }
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,0.25);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: none;
+  flex-shrink: 0;
+}
 
-  .result-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
+/* ── STATUS ── */
+#status-wrap { margin-top: 24px; display: none; }
 
-  .result-title {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.3;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--muted);
+  background: var(--surface);
+  font-size: 11px;
+  letter-spacing: 1px;
+  transition: border-color 0.3s, color 0.3s;
+}
 
-  .result-platform {
-    font-family: var(--mono);
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 3px 7px;
-    flex-shrink: 0;
-  }
+.status-row.loading { border-color: var(--accent2); color: var(--accent2); }
+.status-row.success { border-color: var(--accent); color: var(--accent); }
+.status-row.error   { border-color: var(--danger); color: var(--danger); }
+.status-row.warn    { border-color: var(--warn); color: var(--warn); }
 
-  .download-options {
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+.s-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
 
-  .download-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border: 1px solid var(--border);
-    gap: 12px;
-    transition: border-color 0.2s;
-  }
+.loading .s-dot { animation: pulse 1s infinite; }
 
-  .download-item:hover { border-color: var(--accent); }
+/* ── RESULT ── */
+#result { margin-top: 20px; display: none; animation: up 0.4s ease both; }
 
-  .download-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
+.result-meta {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-bottom: none;
+  align-items: flex-start;
+}
 
-  .download-quality {
-    font-weight: 700;
-    font-size: 14px;
-  }
+.thumb {
+  width: 80px;
+  height: 52px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border2);
+  background: var(--border);
+}
 
-  .download-meta {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
+.meta-info { flex: 1; min-width: 0; }
 
-  .download-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-    white-space: nowrap;
-  }
+.meta-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  .download-btn:hover { background: var(--accent); color: #000; }
+.meta-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 
-  /* Footer note */
-  .note {
-    margin-top: 48px;
-    padding: 16px 20px;
-    border: 1px dashed var(--border);
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.8;
-    animation: fadeUp 0.6s 0.4s ease both;
-  }
+.tag {
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 2px 7px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  text-transform: uppercase;
+}
 
-  .note strong { color: var(--accent2); }
+.tag.green { border-color: rgba(0,245,160,0.3); color: var(--accent); }
+.tag.blue  { border-color: rgba(0,200,255,0.3); color: var(--accent2); }
 
-  /* Footer */
-  footer {
-    margin-top: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    animation: fadeUp 0.6s 0.5s ease both;
-  }
+.formats-list {
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  max-height: 360px;
+  overflow-y: auto;
+}
 
-  /* Animations */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+.formats-list::-webkit-scrollbar { width: 4px; }
+.formats-list::-webkit-scrollbar-track { background: var(--surface); }
+.formats-list::-webkit-scrollbar-thumb { background: var(--border2); }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+.fmt-header {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr 90px;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+.fmt-row {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr 90px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  transition: background 0.15s;
+}
 
-  /* Mobile */
-  @media (max-width: 500px) {
-    .options-row { flex-direction: column; }
-    footer { flex-direction: column; gap: 8px; }
-  }
+.fmt-row:last-child { border-bottom: none; }
+.fmt-row:hover { background: var(--surface2); }
+
+.fmt-quality { font-size: 13px; font-weight: 600; color: var(--text); }
+.fmt-ext { font-size: 10px; color: var(--accent2); letter-spacing: 1px; }
+.fmt-info { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+.dl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.dl-btn:hover { background: var(--accent); color: #000; }
+
+/* audio-only row */
+.fmt-row.audio-row .fmt-quality { color: var(--accent2); }
+
+/* ── NOTE ── */
+.note {
+  margin-top: 40px;
+  padding: 14px 18px;
+  border: 1px dashed var(--border2);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.9;
+  letter-spacing: 0.5px;
+  animation: up 0.5s 0.3s ease both;
+}
+
+.note strong { color: var(--danger); }
+.note a { color: var(--accent2); text-decoration: none; }
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  animation: up 0.5s 0.35s ease both;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@media (max-width: 480px) {
+  .opts { grid-template-columns: 1fr 1fr; }
+  .fmt-header, .fmt-row { grid-template-columns: 60px 60px 1fr 80px; }
+  footer { flex-direction: column; gap: 6px; }
+}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
 
+<div class="wrap">
+
+  <!-- Header -->
   <header>
-    <div class="badge">↓ Video Downloader</div>
-    <h1>FETCH<span>IT.</span></h1>
-    <p class="subtitle">// Paste link. Pick quality. Download. Done.</p>
-
+    <div class="logo-row">
+      <div class="logo">FETCH<em>IT</em></div>
+      <div class="version-tag">v2.0</div>
+    </div>
+    <div class="tagline">// paste link → pick format → download</div>
     <div class="platforms">
-      <span class="platform-tag active">YouTube</span>
-      <span class="platform-tag active">Instagram</span>
-      <span class="platform-tag active">Twitter / X</span>
-      <span class="platform-tag active">TikTok</span>
-      <span class="platform-tag active">Reddit</span>
-      <span class="platform-tag active">Vimeo</span>
-      <span class="platform-tag active">SoundCloud</span>
-      <span class="platform-tag">+ more</span>
+      <span class="pt on">YouTube</span>
+      <span class="pt on">Instagram</span>
+      <span class="pt on">Twitter/X</span>
+      <span class="pt on">TikTok</span>
+      <span class="pt on">Reddit</span>
+      <span class="pt on">Vimeo</span>
+      <span class="pt on">SoundCloud</span>
+      <span class="pt on">Facebook</span>
+      <span class="pt">+ more</span>
     </div>
   </header>
 
+  <!-- Cold Start Banner -->
+  <div id="cold-banner">
+    <div class="cold-top">
+      <div class="cold-label">
+        <div class="cold-dot"></div>
+        Server waking up...
+      </div>
+      <div id="cold-timer">30s</div>
+    </div>
+    <div class="cold-bar-wrap">
+      <div id="cold-bar"></div>
+    </div>
+    <div class="cold-msg">
+      ⚡ Free server was sleeping. Waking it up now — please wait ~30 seconds.<br/>
+      Your request will auto-retry once it's ready.
+    </div>
+  </div>
+
   <!-- URL Input -->
-  <div class="input-section">
-    <label class="input-label" for="url-input">// Video URL</label>
-    <div class="input-row">
-      <input
-        id="url-input"
-        type="text"
-        placeholder="https://youtube.com/watch?v=..."
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <button class="paste-btn" onclick="pasteFromClipboard()">PASTE</button>
+  <div class="section">
+    <label class="field-label" for="url-input">// Video URL</label>
+    <div class="url-row">
+      <input id="url-input" type="text"
+        placeholder="https://youtube.com/watch?v=  or any video link..."
+        autocomplete="off" spellcheck="false"/>
+      <button class="paste-btn" onclick="pasteURL()">PASTE</button>
     </div>
   </div>
 
   <!-- Options -->
-  <div class="options-row">
-    <div class="option-group">
-      <label>Quality</label>
-      <select id="quality-select">
-        <option value="max">Max (Best)</option>
-        <option value="2160">4K — 2160p</option>
+  <div class="opts">
+    <div class="opt-group">
+      <label class="field-label">Quality</label>
+      <select id="sel-quality">
+        <option value="">Best</option>
+        <option value="2160">4K</option>
         <option value="1440">1440p</option>
         <option value="1080" selected>1080p</option>
         <option value="720">720p</option>
         <option value="480">480p</option>
         <option value="360">360p</option>
-        <option value="144">144p (Min)</option>
+        <option value="144">144p</option>
       </select>
     </div>
-    <div class="option-group">
-      <label>Format</label>
-      <select id="format-select">
-        <option value="auto">Auto (Best)</option>
-        <option value="mp4">MP4</option>
-        <option value="webm">WebM</option>
-        <option value="mp3">MP3 (Audio)</option>
-        <option value="ogg">OGG (Audio)</option>
-      </select>
-    </div>
-    <div class="option-group">
-      <label>Mode</label>
-      <select id="mode-select">
-        <option value="auto">Auto</option>
-        <option value="mute">Mute Video</option>
+    <div class="opt-group">
+      <label class="field-label">Type</label>
+      <select id="sel-type">
+        <option value="video">Video</option>
         <option value="audio">Audio Only</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <label class="field-label">Show</label>
+      <select id="sel-show">
+        <option value="all">All Formats</option>
+        <option value="best">Best Only</option>
       </select>
     </div>
   </div>
@@ -543,225 +606,282 @@
   <!-- Fetch Button -->
   <button class="fetch-btn" id="fetch-btn" onclick="fetchVideo()">
     <div class="spinner" id="spinner"></div>
-    <span id="btn-text">Fetch Video</span>
-    <span class="btn-arrow" id="btn-arrow">→</span>
+    <span id="btn-text">↓ Fetch Video</span>
   </button>
 
   <!-- Status -->
-  <div id="status">
-    <div class="status-bar" id="status-bar">
-      <div class="status-dot"></div>
-      <span id="status-text">Fetching...</span>
+  <div id="status-wrap">
+    <div class="status-row" id="status-row">
+      <div class="s-dot"></div>
+      <span id="status-text">—</span>
     </div>
   </div>
 
-  <!-- Result Card -->
-  <div class="result-card" id="result-card">
-    <div class="result-header">
-      <div class="result-title" id="result-title">Video Title</div>
-      <div class="result-platform" id="result-platform">PLATFORM</div>
+  <!-- Result -->
+  <div id="result">
+    <div class="result-meta">
+      <img class="thumb" id="r-thumb" src="" alt="thumbnail"/>
+      <div class="meta-info">
+        <div class="meta-title" id="r-title">—</div>
+        <div class="meta-tags">
+          <span class="tag green" id="r-platform">—</span>
+          <span class="tag blue" id="r-duration">—</span>
+          <span class="tag" id="r-uploader">—</span>
+        </div>
+      </div>
     </div>
-    <div class="download-options" id="download-options"></div>
+    <div class="fmt-header">
+      <span>Quality</span>
+      <span>Format</span>
+      <span>Info</span>
+      <span>Download</span>
+    </div>
+    <div class="formats-list" id="formats-list"></div>
   </div>
 
   <!-- Note -->
   <div class="note">
-    <strong>⚠ NOTE:</strong> This tool uses the open-source <strong style="color:var(--accent)">cobalt.tools</strong> API.
-    Cobalt is a community-maintained, privacy-respecting downloader.
-    Download only content you have rights to. Respect creators and platform ToS.
-    Audio-only mode available for music links.
+    <strong>⚠ NOTE:</strong> Download only content you have rights to. Respect creators.<br/>
+    Direct video URLs expire — download immediately after fetching.<br/>
+    First request may take ~30s if server was sleeping (free tier).
   </div>
 
   <footer>
-    <span>FETCH — VIDEO DOWNLOADER</span>
-    <span>POWERED BY COBALT.TOOLS</span>
+    <span>FETCHIT — VIDEO DOWNLOADER</span>
+    <span>POWERED BY YT-DLP</span>
   </footer>
 
 </div>
 
 <script>
-  // Cobalt API — open-source, free, no auth needed
-  const COBALT_API = 'https://api.cobalt.tools/';
+const API = 'https://download-video-audio-3qci.onrender.com';
+const COLD_START_THRESHOLD = 8000; // if response takes >8s, show cold start banner
+const COLD_START_WAIT = 30;
 
-  function detectPlatform(url) {
-    if (!url) return 'UNKNOWN';
-    const u = url.toLowerCase();
-    if (u.includes('youtube.com') || u.includes('youtu.be')) return 'YOUTUBE';
-    if (u.includes('instagram.com')) return 'INSTAGRAM';
-    if (u.includes('twitter.com') || u.includes('x.com')) return 'TWITTER/X';
-    if (u.includes('tiktok.com')) return 'TIKTOK';
-    if (u.includes('reddit.com')) return 'REDDIT';
-    if (u.includes('vimeo.com')) return 'VIMEO';
-    if (u.includes('soundcloud.com')) return 'SOUNDCLOUD';
-    if (u.includes('twitch.tv')) return 'TWITCH';
-    return 'VIDEO';
-  }
+let coldInterval = null;
+let coldSeconds = COLD_START_WAIT;
+let fetchStartTime = null;
+let coldStartTriggered = false;
 
-  function setStatus(type, message) {
-    const statusEl = document.getElementById('status');
-    const bar = document.getElementById('status-bar');
-    const text = document.getElementById('status-text');
-    statusEl.style.display = 'block';
-    bar.className = 'status-bar ' + type;
-    text.textContent = message;
-  }
+// ── Utilities ──────────────────────────────────────────
 
-  function setLoading(loading) {
-    const btn = document.getElementById('fetch-btn');
-    const spinner = document.getElementById('spinner');
-    const btnText = document.getElementById('btn-text');
-    const arrow = document.getElementById('btn-arrow');
-    btn.disabled = loading;
-    spinner.style.display = loading ? 'block' : 'none';
-    arrow.style.display = loading ? 'none' : 'inline';
-    btnText.textContent = loading ? 'Fetching...' : 'Fetch Video';
-  }
+function fmtDuration(sec) {
+  if (!sec) return '—';
+  const m = Math.floor(sec / 60), s = sec % 60;
+  const h = Math.floor(m / 60);
+  if (h > 0) return `${h}:${String(m % 60).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
 
-  async function pasteFromClipboard() {
-    try {
-      const text = await navigator.clipboard.readText();
-      document.getElementById('url-input').value = text;
-    } catch {
-      document.getElementById('url-input').focus();
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes > 1e9) return (bytes/1e9).toFixed(1) + ' GB';
+  if (bytes > 1e6) return (bytes/1e6).toFixed(1) + ' MB';
+  return (bytes/1e3).toFixed(0) + ' KB';
+}
+
+function setStatus(type, msg) {
+  const wrap = document.getElementById('status-wrap');
+  const row  = document.getElementById('status-row');
+  const txt  = document.getElementById('status-text');
+  wrap.style.display = 'block';
+  row.className = 'status-row ' + type;
+  txt.textContent = msg;
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('fetch-btn');
+  const sp  = document.getElementById('spinner');
+  const bt  = document.getElementById('btn-text');
+  btn.disabled = on;
+  sp.style.display = on ? 'block' : 'none';
+  bt.textContent = on ? 'Fetching...' : '↓ Fetch Video';
+}
+
+async function pasteURL() {
+  try {
+    const t = await navigator.clipboard.readText();
+    document.getElementById('url-input').value = t;
+  } catch { document.getElementById('url-input').focus(); }
+}
+
+// ── Cold Start Banner ──────────────────────────────────
+
+function startColdBanner() {
+  coldStartTriggered = true;
+  coldSeconds = COLD_START_WAIT;
+  const banner = document.getElementById('cold-banner');
+  const timer  = document.getElementById('cold-timer');
+  const bar    = document.getElementById('cold-bar');
+
+  banner.style.display = 'block';
+  timer.textContent = coldSeconds + 's';
+  bar.style.width = '100%';
+
+  coldInterval = setInterval(() => {
+    coldSeconds--;
+    timer.textContent = coldSeconds + 's';
+    bar.style.width = (coldSeconds / COLD_START_WAIT * 100) + '%';
+    if (coldSeconds <= 0) stopColdBanner();
+  }, 1000);
+}
+
+function stopColdBanner() {
+  if (coldInterval) { clearInterval(coldInterval); coldInterval = null; }
+  document.getElementById('cold-banner').style.display = 'none';
+  coldStartTriggered = false;
+}
+
+// ── Cold start check: ping after threshold ─────────────
+
+function checkColdStart() {
+  setTimeout(() => {
+    // If still loading after threshold, assume cold start
+    if (document.getElementById('fetch-btn').disabled && !coldStartTriggered) {
+      startColdBanner();
+    }
+  }, COLD_START_THRESHOLD);
+}
+
+// ── Main Fetch ─────────────────────────────────────────
+
+async function fetchVideo() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { setStatus('error', '✗ Enter a video URL first.'); document.getElementById('status-wrap').style.display='block'; return; }
+
+  setLoading(true);
+  setStatus('loading', '⟳ Connecting to server...');
+  document.getElementById('result').style.display = 'none';
+  stopColdBanner();
+  coldStartTriggered = false;
+  fetchStartTime = Date.now();
+
+  checkColdStart();
+
+  const quality = document.getElementById('sel-quality').value;
+  const type    = document.getElementById('sel-type').value;
+  const showAll = document.getElementById('sel-show').value === 'all';
+
+  try {
+    const resp = await fetch(`${API}/info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    stopColdBanner();
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || `Server error ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    setLoading(false);
+
+    if (data.error) { setStatus('error', '✗ ' + data.error); return; }
+
+    renderResult(data, type, quality, showAll);
+
+  } catch (err) {
+    stopColdBanner();
+    setLoading(false);
+    const elapsed = Date.now() - fetchStartTime;
+    if (err.name === 'TypeError' || elapsed > 25000) {
+      setStatus('error', '✗ Server unreachable. May still be waking up — try again in 10s.');
+    } else {
+      setStatus('error', '✗ ' + err.message);
     }
   }
+}
 
-  function buildDownloadItems(downloadUrl, quality, format) {
-    const container = document.getElementById('download-options');
-    container.innerHTML = '';
+// ── Render Result ──────────────────────────────────────
 
-    // Main download
-    const item = document.createElement('div');
-    item.className = 'download-item';
-    item.innerHTML = `
-      <div class="download-info">
-        <div class="download-quality">${quality}</div>
-        <div class="download-meta">${format.toUpperCase()} · AUTO-DETECTED</div>
-      </div>
-      <a class="download-btn" href="${downloadUrl}" target="_blank" rel="noopener">
-        ↓ DOWNLOAD
-      </a>
-    `;
-    container.appendChild(item);
+function renderResult(data, type, preferQuality, showAll) {
+  // Meta
+  document.getElementById('r-title').textContent    = data.title || 'Untitled';
+  document.getElementById('r-platform').textContent = data.platform || '—';
+  document.getElementById('r-duration').textContent = fmtDuration(data.duration);
+  document.getElementById('r-uploader').textContent = data.uploader || '—';
+
+  const thumb = document.getElementById('r-thumb');
+  if (data.thumbnail) { thumb.src = data.thumbnail; thumb.style.display = 'block'; }
+  else { thumb.style.display = 'none'; }
+
+  // Filter formats
+  let formats = data.formats || [];
+
+  if (type === 'audio') {
+    formats = formats.filter(f => f.acodec && f.acodec !== 'none' && (!f.vcodec || f.vcodec === 'none'));
+  } else {
+    formats = formats.filter(f => f.vcodec && f.vcodec !== 'none');
   }
 
-  async function fetchVideo() {
-    const url = document.getElementById('url-input').value.trim();
-    if (!url) {
-      setStatus('error', '✗ Please enter a video URL first.');
-      document.getElementById('status').style.display = 'block';
-      document.getElementById('result-card').style.display = 'none';
-      return;
-    }
-
-    const quality = document.getElementById('quality-select').value;
-    const format = document.getElementById('format-select').value;
-    const mode = document.getElementById('mode-select').value;
-
-    setLoading(true);
-    setStatus('loading', '⟳ Contacting cobalt API...');
-    document.getElementById('status').style.display = 'block';
-    document.getElementById('result-card').style.display = 'none';
-
-    // Build request body for cobalt API
-    const body = {
-      url: url,
-      videoQuality: quality === 'max' ? '9999' : quality,
-      filenameStyle: 'pretty',
-      downloadMode: mode === 'audio' ? 'audio' : mode === 'mute' ? 'mute' : 'auto',
-    };
-
-    if (format !== 'auto') {
-      if (['mp3', 'ogg'].includes(format)) {
-        body.audioFormat = format;
-        body.downloadMode = 'audio';
-      } else {
-        body.videoFormat = format;
-      }
-    }
-
-    try {
-      const resp = await fetch(COBALT_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      const data = await resp.json();
-      setLoading(false);
-
-      if (data.status === 'error') {
-        setStatus('error', '✗ ' + (data.error?.code || 'Unknown error from cobalt API.'));
-        return;
-      }
-
-      if (data.status === 'tunnel' || data.status === 'redirect' || data.url) {
-        const downloadUrl = data.url;
-        const platform = detectPlatform(url);
-        const qualityLabel = quality === 'max' ? 'Best Quality' : quality + 'p';
-
-        setStatus('success', '✓ Ready to download!');
-        document.getElementById('result-title').textContent = data.filename || 'Video';
-        document.getElementById('result-platform').textContent = platform;
-        buildDownloadItems(downloadUrl, qualityLabel, format === 'auto' ? 'Auto' : format);
-        document.getElementById('result-card').style.display = 'block';
-        return;
-      }
-
-      // Picker (multiple streams, e.g. Instagram carousel)
-      if (data.status === 'picker' && data.picker) {
-        const platform = detectPlatform(url);
-        setStatus('success', `✓ Found ${data.picker.length} media items!`);
-        document.getElementById('result-title').textContent = 'Multiple Items Found';
-        document.getElementById('result-platform').textContent = platform;
-
-        const container = document.getElementById('download-options');
-        container.innerHTML = '';
-        data.picker.forEach((item, i) => {
-          const el = document.createElement('div');
-          el.className = 'download-item';
-          el.innerHTML = `
-            <div class="download-info">
-              <div class="download-quality">Item ${i + 1}</div>
-              <div class="download-meta">${item.type?.toUpperCase() || 'MEDIA'}</div>
-            </div>
-            <a class="download-btn" href="${item.url}" target="_blank" rel="noopener">↓ DOWNLOAD</a>
-          `;
-          container.appendChild(el);
-        });
-
-        if (data.audio) {
-          const audioEl = document.createElement('div');
-          audioEl.className = 'download-item';
-          audioEl.innerHTML = `
-            <div class="download-info">
-              <div class="download-quality">Audio Track</div>
-              <div class="download-meta">AUDIO ONLY</div>
-            </div>
-            <a class="download-btn" href="${data.audio}" target="_blank" rel="noopener">↓ DOWNLOAD</a>
-          `;
-          container.appendChild(audioEl);
-        }
-
-        document.getElementById('result-card').style.display = 'block';
-        return;
-      }
-
-      setStatus('error', '✗ Unexpected response. Try a different URL or quality setting.');
-    } catch (err) {
-      setLoading(false);
-      console.error(err);
-      setStatus('error', '✗ Network error. cobalt.tools may be temporarily unavailable. Try cobalt.tools directly.');
-    }
-  }
-
-  // Allow Enter key to trigger fetch
-  document.getElementById('url-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') fetchVideo();
+  // Sort by quality desc
+  formats.sort((a, b) => {
+    const qa = parseInt(a.quality) || 0;
+    const qb = parseInt(b.quality) || 0;
+    return qb - qa;
   });
+
+  // Filter by preferred quality
+  if (preferQuality && !showAll) {
+    const target = parseInt(preferQuality);
+    const exact = formats.filter(f => parseInt(f.quality) === target);
+    if (exact.length) formats = exact;
+    else {
+      // pick closest
+      const best = formats.find(f => parseInt(f.quality) <= target);
+      if (best) formats = [best];
+    }
+  }
+
+  // If showAll=false, deduplicate by ext keeping best per ext
+  if (!showAll) {
+    const seen = {};
+    formats = formats.filter(f => {
+      if (!seen[f.ext]) { seen[f.ext] = true; return true; }
+      return false;
+    });
+  }
+
+  // Limit to 20
+  formats = formats.slice(0, 20);
+
+  const list = document.getElementById('formats-list');
+  list.innerHTML = '';
+
+  if (!formats.length) {
+    list.innerHTML = `<div style="padding:20px 16px;font-size:11px;color:var(--muted)">No formats found for this selection. Try changing quality or type.</div>`;
+  } else {
+    formats.forEach(f => {
+      const isAudio = !f.vcodec || f.vcodec === 'none';
+      const quality = f.quality ? (isAudio ? '~' + f.quality : f.quality + 'p') : (isAudio ? 'Audio' : 'Video');
+      const info = [
+        f.filesize ? fmtSize(f.filesize) : '—',
+        f.acodec && f.acodec !== 'none' ? '🔊' : '🔇'
+      ].join('  ');
+
+      const row = document.createElement('div');
+      row.className = 'fmt-row' + (isAudio ? ' audio-row' : '');
+      row.innerHTML = `
+        <div class="fmt-quality">${quality}</div>
+        <div class="fmt-ext">${(f.ext || '?').toUpperCase()}</div>
+        <div class="fmt-info">${info}</div>
+        <a class="dl-btn" href="${f.url}" target="_blank" rel="noopener" download>↓ GET</a>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  setStatus('success', `✓ Found ${formats.length} format${formats.length !== 1 ? 's' : ''} — click GET to download`);
+  document.getElementById('result').style.display = 'block';
+}
+
+// Enter key
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fetchVideo();
+});
 </script>
 </body>
 </html>
